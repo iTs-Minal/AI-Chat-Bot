@@ -1,0 +1,27 @@
+.start-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+.start-page-btn {
+  width: 40rem;
+  height: 10rem;
+  border: none;
+  color: whitesmoke;
+  text-transform: uppercase;
+  border-radius: 1rem;
+  font-family: "exo 2", sans-serif;
+  font-size: 6rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, hsl(176, 52%, 54%), hsl(198, 80%, 54%));
+  text-shadow: 0rem 1rem 2rem rgba(0, 0, 0, 0.2);
+  box-shadow: 0rem 2rem 5rem rgba(0, 0, 0, 0.2);
+  cursor:pointer;
+  transition: transform 0.2s ease;
+
+}
+.start-page-btn:active {
+  transform: scale(0.93);
+}
