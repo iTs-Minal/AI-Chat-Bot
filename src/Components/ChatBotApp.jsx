@@ -152,7 +152,7 @@ const ChatBotApp = ({
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behaviour: "smooth" });
   }, [messages]);
-
+  
   return (
     <div className="chat-app">
       <div className={`chat-list ${showChatList?"show":""}`}>
