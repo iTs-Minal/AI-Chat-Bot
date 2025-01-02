@@ -1,10 +1,21 @@
+import { useEffect, useRef, useState } from "react";
+import "./ChatBotApp.css";
+import PropTypes from "prop-types";
+
+//importing react icons
+
 import { FaRocketchat } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { IoArrowBackCircleSharp } from "react-icons/io5";
 import { MdEmojiEmotions } from "react-icons/md";
 import { IoSend } from "react-icons/io5";
-import "./ChatBotApp.css";
-import { useEffect, useState } from "react";
+import { TiThMenu } from "react-icons/ti";
+
+//importing emoji picker
+
+import Picker from "@emoji-mart/react";
+import data from "@emoji-mart/data";
+import { stringify } from "uuid";
 
 const ChatBotApp = ({
   onGoBack,
@@ -17,17 +28,35 @@ const ChatBotApp = ({
   const [inputValue, setInputValue] = useState("");
 
   const [messages, setMessages] = useState(chats[0]?.messages || []);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const[showChatList,setShowChatList]=useState(false);
 
+  const chatEndRef = useRef(null);
+
+  
   // const handleInputChange = (e) => {
-  //   setInputValue(e.target.value);
-  // };
+    //   setInputValue(e.target.value);
+    // };
+    
+    useEffect(() => {
+      const activeChatObj = chats.find((chat) => chat.id === activeChat);
+      setMessages(activeChatObj ? activeChatObj.messages : []);
+    }, [activeChat, chats]);
+    
+    useEffect(()=>{
+      if(activeChat){
+        const storedMessages=JSON.parse(localStorage.getItem(activeChat))||[];
+        setMessages(storedMessages);
+      }
+    },[activeChat])
 
-  useEffect(() => {
-    const activeChatObj = chats.find((chat) => chat.id === activeChat);
-    setMessages(activeChatObj ? activeChatObj.messages : []);
-  }, [activeChat, chats]);
 
-  const sendMessage = () => {
+    const handleEmojiSelect = (emoji) => {
+    setInputValue((prevInput) => prevInput + emoji.native);
+  };
+
+  const sendMessage = async () => {
     if (inputValue.trim() === "") return;
 
     const newMessage = {
@@ -36,43 +65,121 @@ const ChatBotApp = ({
       timestamp: new Date().toLocaleTimeString(),
     };
 
-    const updatedMessages = [...messages, newMessage];
-    setMessages(updatedMessages);
-    setInputValue("");
+    if (!activeChat) {
+      onNewChat(inputValue);
+      setInputValue("");
+    } else {
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem(activeChat, JSON.stringify(updatedMessages))
+      setInputValue("");
 
-    const updatedChats = chats.map((chat) => {
-      if (chat.id === activeChat) {
-        return {
-          ...chat,
-          messages: updatedMessages,
-        };
-      }
-      return chat;
-    });
-    setChats(updatedChats);
+      const updatedChats = chats.map((chat) => {
+        if (chat.id === activeChat) {
+          return {
+            ...chat,
+            messages: updatedMessages,
+          };
+        }
+        return chat;
+      });
+      setChats(updatedChats);
+      localStorage.setItem("chats",JSON.stringify(updatedChats))
+
+      setIsTyping(true);
+
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer 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`,
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: inputValue }],
+            max_token: 500,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const chatResponse = data.choices[0].message.content.trim();
+
+      const newResponse = {
+        type: "response",
+        text: chatResponse,
+        timestamp: new Date().toLocaleTimeString(),
+      };
+
+      const updatedMessagesWithResponse = [...updatedMessages, newResponse];
+      setMessages(updatedMessagesWithResponse);
+      localStorage.setItem(activeChat, JSON,stringify(updatedMessagesWithResponse))
+      setIsTyping(false);
+
+      const updatedChatsWithResponse = chats.map((chat) => {
+        if (chat.id === activeChat) {
+          return {
+            ...chat,
+            messages: updatedMessagesWithResponse,
+          };
+        }
+        return chat;
+      });
+      setChats(updatedChatsWithResponse);
+      localStorage.setItem("chats",JSON.stringify(updatedChatsWithResponse))
+    }
   };
 
   const handleSelectChat = (id) => {
     setActiveChat(id);
   };
 
+  const handleDeleteChat = (id) => {
+    const updatedChats = chats.filter((chat) => chat.id !== id);
+    setChats(updatedChats);
+
+    localStorage.setItem("chats",JSON.stringify(updatedChats))
+    localStorage.removeItem(id);
+
+    if (id === activeChat) {
+      const newActiveChat = updatedChats.length > 0 ? updatedChats[0].id : null;
+      setActiveChat(newActiveChat);
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behaviour: "smooth" });
+  }, [messages]);
+
   return (
     <div className="chat-app">
-      <div className="chat-list">
+      <div className={`chat-list ${showChatList?"show":""}`}>
         <div className="chat-list-header">
           <h2>Chat List</h2>
-          <span className="rocket-chat-icon" onClick={onNewChat}>
+          
+          <span className="rocket-chat-icon" onClick={() => onNewChat()}>
             <FaRocketchat />
           </span>
+          <span className="close-icon" onClick={()=>setShowChatList(false)}>X</span>
         </div>
         {chats.map((chat) => (
           <div
             key={chat.id}
-            className={`chat-list-item ${chat.id=== activeChat ? "active" : ""}`}
+            className={`chat-list-item ${
+              chat.id === activeChat ? "active" : ""
+            }`}
             onClick={() => handleSelectChat(chat.id)}
           >
-            <h4>{chat.id}</h4>
-            <span className="delete-icon">
+            <h4>{chat.displayId}</h4>
+            <span
+              className="delete-icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteChat(chat.id);
+              }}
+            >
               <MdDeleteForever />
             </span>
           </div>
@@ -81,6 +188,7 @@ const ChatBotApp = ({
       <div className="chat-window">
         <div className="chat-title">
           <h3>Chat With AI</h3>
+          <span className="menu-icon" onClick={()=>setShowChatList(true)}><TiThMenu /></span>
           <span className="backarrow-icon" onClick={onGoBack}>
             <IoArrowBackCircleSharp />
           </span>
@@ -95,19 +203,28 @@ const ChatBotApp = ({
               <span>{msg.timestamp}</span>
             </div>
           ))}
-
-          <div className="typing">Typing...</div>
+          {isTyping && <div className="typing">Typing...</div>}
+          <div ref={chatEndRef}></div>
         </div>
         <form className="msg-form" onSubmit={(e) => e.preventDefault()}>
-          <span className="emoji-icon">
+          <span
+            className="emoji-icon"
+            onClick={() => setShowEmojiPicker((prev) => !prev)}
+          >
             <MdEmojiEmotions />
           </span>
+          {showEmojiPicker && (
+            <div className="picker">
+              <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+            </div>
+          )}
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             className="msg-input"
             placeholder="Enter Your Message..."
+            onFocus={() => setShowEmojiPicker(false)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 sendMessage();
@@ -121,6 +238,14 @@ const ChatBotApp = ({
       </div>
     </div>
   );
+};
+ChatBotApp.propTypes = {
+  onGoBack: PropTypes.func.isRequired,
+  chats: PropTypes.array.isRequired,
+  setChats: PropTypes.func.isRequired,
+  activeChat: PropTypes.string.isRequired,
+  setActiveChat: PropTypes.func.isRequired,
+  onNewChat: PropTypes.func.isRequired,
 };
 
 export default ChatBotApp;

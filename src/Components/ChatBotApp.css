@@ -93,7 +93,9 @@ body {
     flex-direction: column;
     gap: 10px;
   }
-  
+  .chat::-webkit-scrollbar{
+    display:none;
+  }
   .prompt {
     padding: 12px;
     border-radius: 20px 0 20px 20px;
@@ -139,7 +141,11 @@ body {
         margin-top: auto;  /* Add spacing between typing text and input */
       }
 
-  
+  .picker{
+position: absolute;
+bottom: 5rem;
+left:40rem;
+  }
   .msg-form {
     display: flex;
     align-items: center;
@@ -196,36 +202,71 @@ body {
     opacity:0;
 }
 
+.chat-title .menu-icon{
+  display: none;
+}
+
+.chat-list  .close-icon {
+  display: none;
+}
+
+
+
   /* Responsive Design */
-  @media (max-width: 768px) {
-    .chat-app {
-      flex-direction: column;
-      height: 100%;
-    }
-  
-    .chat-list {
-      height: 30%;
-      border-right: none;
-      border-bottom: 1px solid #444;
-    }
-  
-    .chat-window {
-      height: 70%;
-    }
+  @media (max-width: 900px) {
+.chat-app{
+  flex-direction:column;
+}
+.chat-list{
+  position:fixed;
+  top:0;
+  left:0;
+  width:40%;
+  height:100%;
+  transform:translateX(-100%);
+  z-index:1000;
+}
+
+.chat-list.show{
+  transform:translateX(0);
+}
+
+.chat-window{
+  width:100%;
+}
+
+.chat-list.show .close-icon {
+  font-size:20px;
+  font-weight: bold;
+  color: rgb(219, 209, 209);
+  display:block;
+  cursor: pointer;
+  /* position:absolute; */
+  right:10px;
+  top:12px;
+}
+
+.chat-title .menu-icon{
+  font-size:25px;
+  font-weight: bold;
+  margin-top:7px;
+  color: rgb(219, 209, 209);
+  display:block;
+  cursor: pointer;
+  position:absolute;
+}
+.chat-title h3{
+  padding-left:5rem;
+}
+
   }
   
-  @media (max-width: 480px) {
-    .chat-list-header, .chat-title {
-      flex-direction: column;
-      text-align: center;
-    }
-  
-    .chat-list-item {
-      font-size: 10px;
-    }
-  
-    .msg-form .msg-input {
-      font-size: 10px;
-    }
+  @media (max-width: 500px) {
+.chat-list{
+  width:60%;
+}
+.picker{
+  left:3rem;
+}
   }
   

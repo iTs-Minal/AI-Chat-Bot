@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChatBotApp from "./Components/ChatBotApp";
 import ChatBotStartPage from "./Components/ChatBotStartPage";
+import { v4 as uuidv4 } from "uuid";
 
 const App = () => {
   const [isChatting, setIsChatting] = useState(false);
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
+
+  useEffect(() => {
+    const storedChats = JSON.parse(localStorage.getItem("chats")) || [];
+    setChats(storedChats);
+    if(storedChats.length>0){
+      setActiveChat(storedChats[0].id);
+    }
+  },[]);
 
   const handleStartChat = () => {
     setIsChatting(true);
@@ -19,16 +28,27 @@ const App = () => {
     setIsChatting(false);
   };
 
-  const createNewChat = () => {
+  const createNewChat = (initialMessage = "") => {
     const newChat = {
-      id: `Chat ${new Date().toLocaleDateString(
+      id: uuidv4(),
+      displayId: `Chat ${new Date().toLocaleDateString(
         "en-GB"
       )} ${new Date().toLocaleTimeString()}`,
-      messages: [],
+      messages: initialMessage
+        ? [
+            {
+              type: "prompt",
+              text: initialMessage,
+              timestamp: new Date().toLocaleTimeString(),
+            },
+          ]
+        : [],
     };
 
     const updatedChats = [newChat, ...chats];
     setChats(updatedChats);
+    localStorage.setItem("chats", JSON.stringify(updatedChats));
+    localStorage.setItem(newChat.id, JSON.stringify(newChat.messages));
     setActiveChat(newChat.id);
   };
 
