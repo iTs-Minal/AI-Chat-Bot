@@ -94,7 +94,7 @@ const ChatBotApp = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer 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`,
+            // Authorization: `Bearer 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`,
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
