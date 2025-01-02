@@ -22,6 +22,9 @@ A sleek, feature-rich AI chatbot application that allows users to interact with 
 
 ## 📸 ScreenShot  
 ![ScreenShot 1](https://github.com/iTs-Minal/AI-Chat-Bot/blob/master/chat-bot.PNG?raw=true)
+![ScreenShot 2](https://github.com/iTs-Minal/AI-Chat-Bot/blob/master/ss%202.PNG?raw=true)
+![ScreenShot 3](https://github.com/iTs-Minal/AI-Chat-Bot/blob/master/ss%203.PNG?raw=true)
+
 
 ## 🎉 Getting Started
 ### **Prerequisites**
