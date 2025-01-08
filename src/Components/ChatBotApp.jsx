@@ -94,7 +94,7 @@ const ChatBotApp = ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env}`,
+            Authorization: `Bearer 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`,
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
